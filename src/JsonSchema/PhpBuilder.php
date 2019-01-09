@@ -52,6 +52,7 @@ class PhpBuilder
     public $skipSchemaDescriptions = false;
     public $buildArrayAdders = false;
     public $buildConstructors = false;
+    public $buildToArray = false;
 
     /**
      * Squish multiple $ref, a PHP class for each $ref will be created if false
@@ -121,7 +122,7 @@ class PhpBuilder
         $class->setExtends(Palette::classStructureClass());
 
         if ($this->buildConstructors) {
-            $construct = new PhpFunction('__construct');
+            $construct = new PhpFunction('__construct', PhpFlags::VIS_PUBLIC);
             $class->addMethod($construct);
         }
         
@@ -212,6 +213,12 @@ class PhpBuilder
             }
         }
 
+        if($this->buildToArray) {
+            $toArray = new PhpFunction('&toArray', PhpFlags::VIS_PUBLIC);
+            $this->addToArray($toArray);
+            $class->addMethod($toArray);
+        }
+        
         $schemaBuilder = new SchemaBuilder($schema, '$ownerSchema', $path, $this, false);
         if ($this->skipSchemaDescriptions) {
             $schemaBuilder->skipProperty(JsonSchema::names()->description);
@@ -258,6 +265,15 @@ class PhpBuilder
 
 PHP;
         $construct->setBody( $body );
+    }
+    
+    public function addToArray( $toArray ) {
+        $body = <<<PHP
+\$test = json_decode( json_encode( self::export( \$this ) ), true);
+return \$test;
+
+PHP;
+        $toArray->setBody($body);
     }
     
     /**
