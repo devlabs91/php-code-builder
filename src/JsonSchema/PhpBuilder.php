@@ -24,6 +24,7 @@ use Swaggest\PhpCodeBuilder\Property\PatternPropertiesGetter;
 use Swaggest\PhpCodeBuilder\Property\PatternPropertySetter;
 use Swaggest\PhpCodeBuilder\Property\Setter;
 use Swaggest\PhpCodeBuilder\Types\TypeOf;
+use Swaggest\PhpCodeBuilder\Property\ArrayAdder;
 
 /**
  * @todo properly process $ref, $schema property names
@@ -49,6 +50,8 @@ class PhpBuilder
     public $buildSetters = false;
     public $makeEnumConstants = false;
     public $skipSchemaDescriptions = false;
+    public $buildArrayAdders = false;
+    public $buildConstructors = false;
 
     /**
      * Squish multiple $ref, a PHP class for each $ref will be created if false
@@ -117,6 +120,11 @@ class PhpBuilder
         }
         $class->setExtends(Palette::classStructureClass());
 
+        if ($this->buildConstructors) {
+            $construct = new PhpFunction('__construct');
+            $class->addMethod($construct);
+        }
+        
         $setupProperties = new PhpFunction('setUpProperties');
         $setupProperties
             ->setVisibility(PhpFlags::VIS_PUBLIC)
@@ -168,6 +176,17 @@ class PhpBuilder
                 if ($this->buildSetters) {
                     $class->addMethod(new Setter($phpProperty, true));
                 }
+
+                if ($this->buildArrayAdders) {
+                    if ($property->type=='array') {
+                        $class->addMethod(new ArrayAdder($phpProperty, true));
+                    }
+                }
+                
+                if ($this->buildConstructors) {
+                    $this->addConstructProperty( $construct, $phpProperty );
+                }
+                
                 $body->addSnippet(
                     $schemaBuilder->build()
                 );
@@ -228,6 +247,19 @@ class PhpBuilder
     /** @var DynamicIterator */
     private $dynamicIterator;
 
+    public function addConstructProperty( $construct, $phpProperty ) {
+        $property = clone $phpProperty;
+        $property->getNamedVar()->setDefault(null);
+        $name = $property->getNamedVar()->getName();
+        $construct->addArgument($property->getNamedVar());
+        $body = $construct->getBody();
+        $body .= <<<PHP
+\$this->{$name} = \${$name};
+
+PHP;
+        $construct->setBody( $body );
+    }
+    
     /**
      * @return GeneratedClass[]|DynamicIterator
      */
