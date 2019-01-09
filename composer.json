@@ -1,5 +1,5 @@
 {
-  "name": "swaggest/php-code-builder",
+  "name": "devlabs91/php-code-builder",
   "type": "library",
   "description": "Swaggest JSON-schema enabled PHP code builder",
   "keywords": ["library"],
@@ -14,8 +14,8 @@
   ],
   "require": {
     "ext-json": "*",
-    "swaggest/json-schema": "^0.12.0",
-    "swaggest/code-builder": "^0.3.1",
+    "devlabs91/json-schema": "^0.12.0",
+    "devlabs91/code-builder": "^0.3.1",
     "php": ">=5.5.0"
   },
   "require-dev": {
