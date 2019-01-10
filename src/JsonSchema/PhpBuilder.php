@@ -25,6 +25,8 @@ use Swaggest\PhpCodeBuilder\Property\PatternPropertySetter;
 use Swaggest\PhpCodeBuilder\Property\Setter;
 use Swaggest\PhpCodeBuilder\Types\TypeOf;
 use Swaggest\PhpCodeBuilder\Property\ArrayAdder;
+use Swaggest\PhpCodeBuilder\Property\ArraySetByKey;
+use Swaggest\PhpCodeBuilder\Property\ArrayGetByKey;
 
 /**
  * @todo properly process $ref, $schema property names
@@ -181,6 +183,8 @@ class PhpBuilder
                 if ($this->buildArrayAdders) {
                     if ($property->type=='array') {
                         $class->addMethod(new ArrayAdder($phpProperty, true));
+                        $class->addMethod(new ArrayGetByKey($phpProperty, true));
+                        $class->addMethod(new ArraySetByKey($phpProperty, true));
                     }
                 }
                 
